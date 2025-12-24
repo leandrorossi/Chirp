@@ -33,3 +33,13 @@ plugins {
 }
 
 include(":composeApp")
+include(":core:domain")
+include(":core:data")
+include(":core:presentation")
+include(":core:designsystem")
+include(":feature:auth:domain")
+include(":feature:auth:presentation")
+include(":feature:chat:data")
+include(":feature:chat:presentation")
+include(":feature:chat:domain")
+include(":feature:chat:database")
