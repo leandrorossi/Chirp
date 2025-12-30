@@ -9,6 +9,7 @@ group = "com.leandrour.convention.buildlogic"
 dependencies {
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.android.tools.common)
+    compileOnly(libs.androidx.room.gradle.plugin)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.compose.gradlePlugin)
 }
@@ -56,6 +57,10 @@ gradlePlugin {
         register("cmpFeature") {
             id = "com.leandrour.convention.cmp.feature"
             implementationClass = "CmpFeatureConventionPlugin"
+        }
+        register("room") {
+            id = "com.leandrour.convention.room"
+            implementationClass = "RoomConventionPlugin"
         }
     }
 }

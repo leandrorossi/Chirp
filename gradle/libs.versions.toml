@@ -169,6 +169,7 @@ convention-cmp-application = { id = "com.leandrour.convention.cmp.application", 
 convention-kmp-library = { id = "com.leandrour.convention.kmp.library", version = "unspecified" }
 convention-cmp-library = { id = "com.leandrour.convention.cmp.library", version = "unspecified" }
 convention-cmp-feature = { id = "com.leandrour.convention.cmp.feature", version = "unspecified" }
+convention-room = { id = "com.leandrour.convention.room", version = "unspecified" }
 
 # Android
 android-application = { id = "com.android.application", version.ref = "agp" }
