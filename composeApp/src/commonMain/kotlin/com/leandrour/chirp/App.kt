@@ -19,14 +19,13 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import chirp.composeapp.generated.resources.Res
 import chirp.composeapp.generated.resources.compose_multiplatform
 import com.leandrour.auth.presentation.register.RegisterRoot
+import com.leandrour.chirp.navigation.NavigationRoot
 import com.leandrour.core.designsystem.theme.ChirpTheme
 
 @Composable
 @Preview
 fun App() {
     ChirpTheme {
-        RegisterRoot(
-            onRegisterSuccess = { }
-        )
+        NavigationRoot()
     }
 }
