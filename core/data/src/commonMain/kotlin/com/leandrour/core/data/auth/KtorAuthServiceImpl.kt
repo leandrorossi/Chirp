@@ -1,6 +1,8 @@
 package com.leandrour.core.data.auth
 
+import com.leandrour.core.data.dto.EmailRequest
 import com.leandrour.core.data.dto.RegisterRequest
+import com.leandrour.core.data.networking.get
 import com.leandrour.core.data.networking.post
 import com.leandrour.core.domain.auth.AuthService
 import com.leandrour.core.domain.util.DataError
@@ -23,6 +25,20 @@ class KtorAuthServiceImpl(
                 username = username,
                 password = password
             )
+        )
+    }
+
+    override suspend fun resendVerificationEmail(email: String): EmptyResult<DataError.Remote> {
+        return httpClient.post(
+            route = "/auth/resend-verification",
+            body = EmailRequest(email)
+        )
+    }
+
+    override suspend fun verifyEmail(token: String): EmptyResult<DataError.Remote> {
+        return httpClient.get(
+            route = "/auth/verify",
+            queryParams = mapOf("token" to token)
         )
     }
 }
