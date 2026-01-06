@@ -18,6 +18,8 @@ kotlin {
                 implementation(projects.core.presentation)
                 implementation(projects.core.designsystem)
 
+                implementation(libs.bundles.koin.common)
+
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
             }
