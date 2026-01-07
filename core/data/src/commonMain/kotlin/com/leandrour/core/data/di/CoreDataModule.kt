@@ -1,9 +1,11 @@
 package com.leandrour.core.data.di
 
+import com.leandrour.core.data.auth.DataStoreSessionStorageImpl
 import com.leandrour.core.data.auth.KtorAuthServiceImpl
 import com.leandrour.core.data.logging.KermitLogger
 import com.leandrour.core.data.networking.HttpClientFactory
 import com.leandrour.core.domain.auth.AuthService
+import com.leandrour.core.domain.auth.SessionStorage
 import com.leandrour.core.domain.logging.ChirpLogger
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -21,4 +23,5 @@ val coreDataModule = module {
     }
 
     singleOf(::KtorAuthServiceImpl) bind AuthService::class
+    singleOf(::DataStoreSessionStorageImpl) bind SessionStorage::class
 }
