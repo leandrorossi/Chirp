@@ -1,6 +1,7 @@
 package com.leandrour.auth.presentation.di
 
 import com.leandrour.auth.presentation.email_verification.EmailVerificationViewModel
+import com.leandrour.auth.presentation.login.LoginViewModel
 import com.leandrour.auth.presentation.register.RegisterViewModel
 import com.leandrour.auth.presentation.register_success.RegisterSuccessViewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -10,4 +11,5 @@ val authPresentationModule = module {
     viewModelOf(::RegisterViewModel)
     viewModelOf(::RegisterSuccessViewModel)
     viewModelOf(::EmailVerificationViewModel)
+    viewModelOf(::LoginViewModel)
 }
