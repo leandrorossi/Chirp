@@ -1,17 +1,38 @@
 package com.leandrour.core.data.auth
 
+import com.leandrour.core.data.dto.AuthInfoSerializable
 import com.leandrour.core.data.dto.EmailRequest
+import com.leandrour.core.data.dto.LoginRequest
 import com.leandrour.core.data.dto.RegisterRequest
+import com.leandrour.core.data.mappers.toDomain
 import com.leandrour.core.data.networking.get
 import com.leandrour.core.data.networking.post
+import com.leandrour.core.domain.auth.AuthInfo
 import com.leandrour.core.domain.auth.AuthService
 import com.leandrour.core.domain.util.DataError
 import com.leandrour.core.domain.util.EmptyResult
+import com.leandrour.core.domain.util.Result
+import com.leandrour.core.domain.util.map
 import io.ktor.client.HttpClient
 
 class KtorAuthServiceImpl(
     private val httpClient: HttpClient
 ) : AuthService {
+
+    override suspend fun login(
+        email: String,
+        password: String
+    ): Result<AuthInfo, DataError.Remote> {
+        return httpClient.post<LoginRequest, AuthInfoSerializable>(
+            route = "/auth/login",
+            body = LoginRequest(
+                email = email,
+                password = password
+            )
+        ).map { authInfoSerializable ->
+            authInfoSerializable.toDomain()
+        }
+    }
 
     override suspend fun register(
         username: String,

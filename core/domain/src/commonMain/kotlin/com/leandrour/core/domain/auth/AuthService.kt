@@ -2,8 +2,15 @@ package com.leandrour.core.domain.auth
 
 import com.leandrour.core.domain.util.DataError
 import com.leandrour.core.domain.util.EmptyResult
+import com.leandrour.core.domain.util.Result
 
 interface AuthService {
+
+    suspend fun login(
+        email: String,
+        password: String
+    ) : Result<AuthInfo, DataError.Remote>
+
     suspend fun register(
         username: String,
         email: String,
