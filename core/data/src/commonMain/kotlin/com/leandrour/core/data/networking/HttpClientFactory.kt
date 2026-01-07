@@ -1,22 +1,34 @@
 package com.leandrour.core.data.networking
 
+import com.leandrour.core.data.dto.AuthInfoSerializable
+import com.leandrour.core.data.dto.RefreshTokenRequest
+import com.leandrour.core.data.mappers.toDomain
+import com.leandrour.core.domain.auth.SessionStorage
 import com.leandrour.core.domain.logging.ChirpLogger
+import com.leandrour.core.domain.util.onFailure
+import com.leandrour.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BearerTokens
+import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.statement.request
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.json.Json
 
 class HttpClientFactory(
-    private val chirpLogger: ChirpLogger
+    private val chirpLogger: ChirpLogger,
+    private val sessionStorage: SessionStorage
 ) {
 
     fun create(engine: HttpClientEngine): HttpClient {
@@ -45,6 +57,54 @@ class HttpClientFactory(
             }
             defaultRequest {
                 contentType(Json)
+            }
+
+            install(Auth) {
+                bearer {
+                    loadTokens {
+                        sessionStorage
+                            .observeAuthInfo()
+                            .firstOrNull()
+                            ?.let {
+                                BearerTokens(
+                                    accessToken = it.accessToken,
+                                    refreshToken = it.refreshToken
+                                )
+                            }
+                    }
+                    refreshTokens {
+                        if (response.request.url.encodedPath.contains("auth/")) {
+                            return@refreshTokens null
+                        }
+
+                        val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
+                        if (authInfo?.refreshToken.isNullOrBlank()) {
+                            sessionStorage.set(null)
+                            return@refreshTokens null
+                        }
+
+                        var bearerTokens: BearerTokens? = null
+                        client.post<RefreshTokenRequest, AuthInfoSerializable>(
+                            route = "auth/refresh",
+                            body = RefreshTokenRequest(
+                                refreshToken = authInfo.refreshToken
+                            ),
+                            builder = {
+                                markAsRefreshTokenRequest()
+                            }
+                        ).onSuccess { newAuthInfo ->
+                            sessionStorage.set(newAuthInfo.toDomain())
+                            bearerTokens = BearerTokens(
+                                accessToken = newAuthInfo.accessToken,
+                                refreshToken = newAuthInfo.refreshToken
+                            )
+                        }.onFailure { error ->
+                            sessionStorage.set(null)
+                        }
+
+                        bearerTokens
+                    }
+                }
             }
         }
     }
