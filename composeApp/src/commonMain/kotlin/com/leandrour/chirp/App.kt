@@ -9,6 +9,7 @@ import com.leandrour.auth.presentation.navigation.AuthGraphRoutes
 import com.leandrour.chirp.navigation.DeepLinkListener
 import com.leandrour.chirp.navigation.NavigationRoot
 import com.leandrour.core.designsystem.theme.ChirpTheme
+import com.leandrour.core.presentation.util.ObserveAsEvents
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -26,6 +27,18 @@ fun App(
     LaunchedEffect(state.isCheckingAuth) {
         if (!state.isCheckingAuth) {
             onAuthenticationChecked()
+        }
+    }
+
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            MainEvent.OnSessionExpired -> {
+                navController.navigate(AuthGraphRoutes.Graph) {
+                    popUpTo(AuthGraphRoutes.Graph) {
+                        inclusive = false
+                    }
+                }
+            }
         }
     }
 
