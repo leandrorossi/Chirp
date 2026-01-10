@@ -10,6 +10,7 @@ import com.leandrour.auth.presentation.forgot_password.ForgotPasswordRoot
 import com.leandrour.auth.presentation.login.LoginRoot
 import com.leandrour.auth.presentation.register.RegisterRoot
 import com.leandrour.auth.presentation.register_success.RegisterSuccessRoot
+import com.leandrour.auth.presentation.reset_password.ResetPasswordRoot
 
 fun NavGraphBuilder.authGraph(
     navController: NavController,
@@ -72,7 +73,7 @@ fun NavGraphBuilder.authGraph(
             )
         ) {
             EmailVerificationRoot(
-                onLoginClick =  {
+                onLoginClick = {
                     navController.navigate(AuthGraphRoutes.Login) {
                         popUpTo(AuthGraphRoutes.EmailVerification) {
                             inclusive = true
@@ -90,6 +91,18 @@ fun NavGraphBuilder.authGraph(
         }
         composable<AuthGraphRoutes.ForgotPassword> {
             ForgotPasswordRoot()
+        }
+        composable<AuthGraphRoutes.ResetPassword>(
+            deepLinks = listOf(
+                navDeepLink {
+                    this.uriPattern = "https://localhost/api/auth/reset-password?token={token}"
+                },
+                navDeepLink {
+                    this.uriPattern = "chirp://localhost/api/auth/reset-password?token={token}"
+                }
+            )
+        ) {
+            ResetPasswordRoot()
         }
     }
 }

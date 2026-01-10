@@ -4,6 +4,7 @@ import com.leandrour.core.data.dto.AuthInfoSerializable
 import com.leandrour.core.data.dto.EmailRequest
 import com.leandrour.core.data.dto.LoginRequest
 import com.leandrour.core.data.dto.RegisterRequest
+import com.leandrour.core.data.dto.ResetPasswordRequest
 import com.leandrour.core.data.mappers.toDomain
 import com.leandrour.core.data.networking.get
 import com.leandrour.core.data.networking.post
@@ -67,6 +68,19 @@ class KtorAuthServiceImpl(
         return httpClient.post<EmailRequest, Unit>(
             route = "/auth/forgot-password",
             body = EmailRequest(email)
+        )
+    }
+
+    override suspend fun resetPassword(
+        newPassword: String,
+        token: String
+    ): EmptyResult<DataError.Remote> {
+        return httpClient.post(
+            route = "/auth/reset-password",
+            body = ResetPasswordRequest(
+                newPassword = newPassword,
+                token = token
+            )
         )
     }
 }
