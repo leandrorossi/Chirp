@@ -60,7 +60,7 @@ class ForgotPasswordViewModel(
     }
 
     private fun submitForgotPasswordRequest() {
-        if (_state.value.isLoading || !_state.value.canSubmit) {
+        if (state.value.isLoading || !state.value.canSubmit) {
             return
         }
 

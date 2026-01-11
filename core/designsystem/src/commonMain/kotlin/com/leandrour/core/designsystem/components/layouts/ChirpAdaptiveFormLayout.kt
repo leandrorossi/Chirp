@@ -30,6 +30,7 @@ import com.leandrour.core.designsystem.components.brand.ChirpBrandLogo
 import com.leandrour.core.designsystem.theme.ChirpTheme
 import com.leandrour.core.designsystem.theme.extended
 import com.leandrour.core.presentation.util.DeviceConfiguration
+import com.leandrour.core.presentation.util.clearFocusOnTap
 import com.leandrour.core.presentation.util.currentDeviceConfiguration
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -52,6 +53,7 @@ fun ChirpAdaptiveFormLayout(
         DeviceConfiguration.MOBILE_PORTRAIT -> {
             ChirpSurface(
                 modifier = modifier
+                    .clearFocusOnTap()
                     .consumeWindowInsets(WindowInsets.navigationBars)
                     .consumeWindowInsets(WindowInsets.displayCutout),
                 header = {
@@ -74,6 +76,7 @@ fun ChirpAdaptiveFormLayout(
             Row(
                 modifier = modifier
                     .fillMaxSize()
+                    .clearFocusOnTap()
                     .consumeWindowInsets(WindowInsets.displayCutout)
                     .consumeWindowInsets(WindowInsets.navigationBars),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -108,6 +111,7 @@ fun ChirpAdaptiveFormLayout(
             Column(
                 modifier = modifier
                     .fillMaxSize()
+                    .clearFocusOnTap()
                     .background(MaterialTheme.colorScheme.background)
                     .padding(top = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
