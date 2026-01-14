@@ -65,10 +65,10 @@ fun NavGraphBuilder.authGraph(
         composable<AuthGraphRoutes.EmailVerification>(
             deepLinks = listOf(
                 navDeepLink {
-                    this.uriPattern = "https://localhost/api/auth/verify?token={token}"
+                    this.uriPattern = "http://10.0.2.2:8080/api/auth/verify?token={token}"
                 },
                 navDeepLink {
-                    this.uriPattern = "chirp://localhost/api/auth/verify?token={token}"
+                    this.uriPattern = "chirp://10.0.2.2:8080/api/auth/verify?token={token}"
                 }
             )
         ) {
@@ -95,10 +95,10 @@ fun NavGraphBuilder.authGraph(
         composable<AuthGraphRoutes.ResetPassword>(
             deepLinks = listOf(
                 navDeepLink {
-                    this.uriPattern = "https://localhost/api/auth/reset-password?token={token}"
+                    this.uriPattern = "http://10.0.2.2:8080/api/auth/reset-password?token={token}"
                 },
                 navDeepLink {
-                    this.uriPattern = "chirp://localhost/api/auth/reset-password?token={token}"
+                    this.uriPattern = "chirp://10.0.2.2:8080/api/auth/reset-password?token={token}"
                 }
             )
         ) {

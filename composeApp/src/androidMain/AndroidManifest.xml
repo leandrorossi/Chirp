@@ -27,7 +27,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="http" />
-                <data android:host="10.0.2.2:8080" />
+                <data android:host="10.0.2.2" />
+                <data android:port="8080" />
 
                 <data android:pathPrefix="/api/auth/verify" />
                 <data android:pathPrefix="/api/auth/reset-password" />
@@ -38,7 +39,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="chirp" />
-                <data android:host="10.0.2.2:8080" />
+                <data android:host="10.0.2.2" />
+                <data android:port="8080" />
 
                 <data android:pathPrefix="/api/auth/verify" />
                 <data android:pathPrefix="/api/auth/reset-password" />
