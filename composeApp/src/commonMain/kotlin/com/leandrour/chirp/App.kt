@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.leandrour.auth.presentation.navigation.AuthGraphRoutes
+import com.leandrour.chat.presentation.navigation.ChatGraphRoutes
 import com.leandrour.chirp.navigation.DeepLinkListener
 import com.leandrour.chirp.navigation.NavigationRoot
 import com.leandrour.core.designsystem.theme.ChirpTheme
@@ -45,8 +46,8 @@ fun App(
     ChirpTheme {
         NavigationRoot(
             navController,
-            startDestination = if (state.isLoggedIn) {
-                Unit
+            startDestination = if (!state.isLoggedIn) {
+                ChatGraphRoutes.Graph
             } else {
                 AuthGraphRoutes.Graph
             }
