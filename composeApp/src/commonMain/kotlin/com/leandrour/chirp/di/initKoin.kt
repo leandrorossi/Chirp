@@ -1,6 +1,7 @@
 package com.leandrour.chirp.di
 
 import com.leandrour.auth.presentation.di.authPresentationModule
+import com.leandrour.chat.data.di.chatDataModule
 import com.leandrour.chat.presentation.di.chatPresentationModule
 import com.leandrour.core.data.di.coreDataModule
 import com.leandrour.core.presentation.di.corePresentationModule
@@ -16,7 +17,8 @@ fun initKoin(config: KoinAppDeclaration? = null) {
             authPresentationModule,
             appModule,
             corePresentationModule,
-            chatPresentationModule
+            chatPresentationModule,
+            chatDataModule
         )
     }
 }
