@@ -18,7 +18,7 @@ fun UserSerializable.toDomain(): User {
         id = id,
         email = email,
         username = username,
-        hasVerifiedEmail = hasVerifiedEmail,
+        hasVerifiedEmail = hasEmailVerified,
         profilePictureUrl = profilePictureUrl
     )
 }
@@ -36,7 +36,7 @@ fun User.toSerializable(): UserSerializable {
         id = id,
         email = email,
         username = username,
-        hasVerifiedEmail = hasVerifiedEmail,
+        hasEmailVerified = hasVerifiedEmail,
         profilePictureUrl = profilePictureUrl
     )
 }
