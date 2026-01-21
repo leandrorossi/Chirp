@@ -67,7 +67,7 @@ fun ChirpMultiLineTextField(
                 onKeyBoardAction()
             },
             decorator = { innerBox ->
-                if (placeholder != null && state.text.isNotEmpty()) {
+                if (placeholder != null && state.text.isEmpty()) {
                     Text(
                         text = placeholder,
                         style = MaterialTheme.typography.bodyLarge,
