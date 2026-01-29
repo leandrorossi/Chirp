@@ -46,7 +46,7 @@ fun App(
     ChirpTheme {
         NavigationRoot(
             navController,
-            startDestination = if (!state.isLoggedIn) {
+            startDestination = if (state.isLoggedIn) {
                 ChatGraphRoutes.Graph
             } else {
                 AuthGraphRoutes.Graph

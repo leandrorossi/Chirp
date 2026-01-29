@@ -10,7 +10,7 @@ import com.leandrour.chat.database.entities.ChatEntity
 import com.leandrour.chat.database.entities.ChatMessageEntity
 import com.leandrour.chat.database.entities.ChatParticipantCrossRef
 import com.leandrour.chat.database.entities.ChatParticipantEntity
-import com.leandrour.chat.database.view.LasMessageView
+import com.leandrour.chat.database.view.LastMessageView
 
 @Database(
     entities = [
@@ -20,7 +20,7 @@ import com.leandrour.chat.database.view.LasMessageView
         ChatParticipantCrossRef::class
     ],
     views = [
-        LasMessageView::class
+        LastMessageView::class
     ],
     version = 1
 )

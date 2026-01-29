@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.leandrour.chat.domain.models.ChatMessage
+import com.leandrour.chat.domain.models.ChatMessageDeliveryStatus
 import com.leandrour.chat.presentation.components.ChatItemHeaderRow
 import com.leandrour.chat.presentation.model.ChatUi
 import com.leandrour.core.designsystem.components.avatar.ChatParticipantUi
@@ -71,7 +72,7 @@ fun ChatListItemUi(
                             color = MaterialTheme.colorScheme.extended.textSecondary,
                         )
                     ) {
-                        append(chat.lastMessageSenderUsername + ":")
+                        append(chat.lastMessageSenderUsername + ": ")
                     }
                     append(chat.lastMessage.content)
                 }
@@ -128,7 +129,8 @@ fun ChatListItemUiPreview() {
                     content = "This is a last chat message that was sent by Philipp " +
                             "and goes over multiple lines to showcase the ellipsis",
                     createdAt = Clock.System.now(),
-                    senderId = "1"
+                    senderId = "1",
+                    deliveryStatus = ChatMessageDeliveryStatus.SENT
                 ),
                 lastMessageSenderUsername = "Philipp"
             )

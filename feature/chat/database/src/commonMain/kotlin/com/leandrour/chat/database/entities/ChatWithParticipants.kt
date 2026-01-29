@@ -3,7 +3,7 @@ package com.leandrour.chat.database.entities
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
-import com.leandrour.chat.database.view.LasMessageView
+import com.leandrour.chat.database.view.LastMessageView
 
 data class ChatWithParticipants(
     @Embedded
@@ -19,9 +19,9 @@ data class ChatWithParticipants(
     @Relation(
         parentColumn = "chatId",
         entityColumn = "chatId",
-        entity = LasMessageView::class
+        entity = LastMessageView::class
     )
-    val lastMessage: LasMessageView?
+    val lastMessage: LastMessageView?
 )
 
 data class ChatInfoEntity(
