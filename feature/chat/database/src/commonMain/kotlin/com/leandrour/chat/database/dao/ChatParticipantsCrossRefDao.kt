@@ -11,16 +11,15 @@ import com.leandrour.chat.database.entities.ChatParticipantEntity
 interface ChatParticipantsCrossRefDao {
 
     @Upsert
-    suspend fun upsetCrossRefs(crossRefs: List<ChatParticipantCrossRef>)
+    suspend fun upsertCrossRefs(crossRefs: List<ChatParticipantCrossRef>)
 
     @Query("SELECT userId FROM chatparticipantcrossref WHERE chatId = :chatId")
     suspend fun getActiveParticipantIdsByChat(chatId: String): List<String>
 
     @Query("SELECT userId FROM chatparticipantcrossref WHERE chatId = :chatId")
-    suspend fun getALlParticipantIdsByChat(chatId: String): List<String>
+    suspend fun getAllParticipantIdsByChat(chatId: String): List<String>
 
-    @Query(
-        """
+    @Query("""
         UPDATE chatparticipantcrossref
         SET isActive = 0
         WHERE chatId = :chatId AND userId IN (:userIds)
@@ -28,33 +27,32 @@ interface ChatParticipantsCrossRefDao {
     )
     suspend fun markParticipantsAsInactive(chatId: String, userIds: List<String>)
 
-    @Query(
-        """
+    @Query("""
         UPDATE chatparticipantcrossref
         SET isActive = 1
         WHERE chatId = :chatId AND userId IN (:userIds)
     """
     )
-    suspend fun reactiveParticipants(chatId: String, userIds: List<String>)
+    suspend fun reactivateParticipants(chatId: String, userIds: List<String>)
 
     @Transaction
     suspend fun syncChatParticipants(
         chatId: String,
-        participantIds: List<ChatParticipantEntity>
+        participants: List<ChatParticipantEntity>
     ) {
-        if (participantIds.isEmpty()) {
+        if (participants.isEmpty()) {
             return
         }
 
-        val serverParticipantIds = participantIds.map { it.userId }.toSet()
-        val allLocalParticipantIds = getALlParticipantIdsByChat(chatId).toSet()
+        val serverParticipantIds = participants.map { it.userId }.toSet()
+        val allLocalParticipantIds = getAllParticipantIdsByChat(chatId).toSet()
         val activeLocalParticipantIds = getActiveParticipantIdsByChat(chatId).toSet()
         val inactiveLocalParticipantIds = allLocalParticipantIds - activeLocalParticipantIds
 
         val participantsToReactivate = serverParticipantIds.intersect(inactiveLocalParticipantIds)
         val participantsToDeactivate = activeLocalParticipantIds - serverParticipantIds
 
-        reactiveParticipants(chatId, participantsToReactivate.toList())
+        reactivateParticipants(chatId, participantsToReactivate.toList())
         markParticipantsAsInactive(chatId, participantsToDeactivate.toList())
 
         val completelyNewParticipantIds = serverParticipantIds - allLocalParticipantIds
@@ -65,6 +63,6 @@ interface ChatParticipantsCrossRefDao {
                 isActive = true
             )
         }
-        upsetCrossRefs(newCrossRefs)
+        upsertCrossRefs(newCrossRefs)
     }
 }

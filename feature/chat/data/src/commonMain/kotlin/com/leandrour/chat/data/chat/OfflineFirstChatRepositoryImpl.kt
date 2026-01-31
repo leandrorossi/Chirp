@@ -8,10 +8,15 @@ import com.leandrour.chat.database.entities.ChatWithParticipants
 import com.leandrour.chat.domain.chat.ChatRepository
 import com.leandrour.chat.domain.chat.ChatService
 import com.leandrour.chat.domain.models.Chat
+import com.leandrour.chat.domain.models.ChatInfo
 import com.leandrour.core.domain.util.DataError
+import com.leandrour.core.domain.util.EmptyResult
 import com.leandrour.core.domain.util.Result
+import com.leandrour.core.domain.util.asEmptyResult
 import com.leandrour.core.domain.util.onSuccess
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 
 class OfflineFirstChatRepositoryImpl(
@@ -24,6 +29,12 @@ class OfflineFirstChatRepositoryImpl(
             .map { chatWithParticipants ->
                 chatWithParticipants.map { it.toDomain() }
             }
+    }
+
+    override fun getChatInfoById(chatId: String): Flow<ChatInfo> {
+        return db.chatDao.getChatInfoById(chatId)
+            .filterNotNull()
+            .map { it.toDomain() }
     }
 
     override suspend fun fetchChats(): Result<List<Chat>, DataError.Remote> {
@@ -45,5 +56,19 @@ class OfflineFirstChatRepositoryImpl(
                     messageDao = db.chatMessageDao
                 )
             }
+    }
+
+    override suspend fun fetchChatById(chatId: String): EmptyResult<DataError.Remote> {
+        return chatService
+            .getChatById(chatId)
+            .onSuccess { chat ->
+                db.chatDao.upsertChatWithParticipantsAndCrossRefs(
+                    chat = chat.toEntity(),
+                    participants = chat.participants.map { it.toEntity() },
+                    participantDao = db.chatParticipantDao,
+                    crossRefDao = db.chatParticipantsCrossRefDao
+                )
+            }
+            .asEmptyResult()
     }
 }

@@ -34,7 +34,7 @@ interface ChatDao {
         FROM chatentity c
         JOIN chatparticipantcrossref cpcr ON c.chatId = cpcr.chatId
         WHERE cpcr.isActive = 1
-        ORDER BY c.lastActivityAt DESC
+        ORDER BY lastActivityAt DESC
     """)
     @Transaction
     fun getChatsWithActiveParticipants(): Flow<List<ChatWithParticipants>>
@@ -59,18 +59,22 @@ interface ChatDao {
     @Transaction
     fun getChatCount(): Flow<Int>
 
-    @Query(
-        """
+    @Query("""
         SELECT p.*
         FROM chatparticipantentity p
         JOIN chatparticipantcrossref cpcr ON p.userId = cpcr.userId
         WHERE cpcr.chatId = :chatId AND cpcr.isActive = true
         ORDER BY p.username
-    """
-    )
+    """)
     fun getActiveParticipantsByChatId(chatId: String): Flow<List<ChatParticipantEntity>>
 
-    @Query("SELECT * FROM chatentity WHERE chatId = :chatId")
+    @Query("""
+        SELECT c.*
+        FROM chatentity c
+        JOIN chatparticipantcrossref cpcr ON c.chatId = cpcr.chatId
+        WHERE c.chatId = :chatId AND cpcr.isActive = true
+    """)
+    @Transaction
     fun getChatInfoById(chatId: String): Flow<ChatInfoEntity?>
 
     @Transaction
@@ -83,15 +87,14 @@ interface ChatDao {
         upsertChat(chat)
         participantDao.upsertParticipants(participants)
 
-        val crossRef = participants.map {
+        val crossRefs = participants.map {
             ChatParticipantCrossRef(
                 chatId = chat.chatId,
                 userId = it.userId,
                 isActive = true
             )
         }
-
-        crossRefDao.upsetCrossRefs(crossRef)
+        crossRefDao.upsertCrossRefs(crossRefs)
         crossRefDao.syncChatParticipants(chat.chatId, participants)
     }
 
@@ -135,12 +138,12 @@ interface ChatDao {
                 )
             }
         }
-        crossRefDao.upsetCrossRefs(allCrossRefs)
+        crossRefDao.upsertCrossRefs(allCrossRefs)
 
         chats.forEach { chat ->
             crossRefDao.syncChatParticipants(
                 chatId = chat.chat.chatId,
-                participantIds = chat.participants
+                participants = chat.participants
             )
         }
 

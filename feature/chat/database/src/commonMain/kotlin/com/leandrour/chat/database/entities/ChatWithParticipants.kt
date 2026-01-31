@@ -40,5 +40,5 @@ data class ChatInfoEntity(
         entityColumn = "chatId",
         entity = ChatMessageEntity::class
     )
-    val messageSenders: List<MessageWithSender>
+    val messagesWithSenders: List<MessageWithSender>
 )
