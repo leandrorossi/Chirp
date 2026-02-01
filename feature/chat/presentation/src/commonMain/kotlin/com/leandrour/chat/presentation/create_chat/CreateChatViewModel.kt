@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import chirp.feature.chat.presentation.generated.resources.Res
 import chirp.feature.chat.presentation.generated.resources.error_participant_not_found
 import com.leandrour.chat.domain.chat.ChatParticipantService
+import com.leandrour.chat.domain.chat.ChatRepository
 import com.leandrour.chat.domain.chat.ChatService
 import com.leandrour.chat.presentation.mappers.toUi
 import com.leandrour.core.domain.util.DataError
@@ -31,7 +32,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
 class CreateChatViewModel(
-    private val chatService: ChatService,
+    private val chatRepository: ChatRepository,
     private val chatParticipantService: ChatParticipantService
 ) : ViewModel() {
 
@@ -151,8 +152,7 @@ class CreateChatViewModel(
                 )
             }
 
-
-            chatService
+            chatRepository
                 .createChat(userIds)
                 .onSuccess { chat ->
                     _state.update {
