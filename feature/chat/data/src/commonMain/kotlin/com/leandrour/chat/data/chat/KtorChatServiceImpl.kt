@@ -5,12 +5,16 @@ import com.leandrour.chat.data.dto.CreateChatRequestDto
 import com.leandrour.chat.data.mappers.toDomain
 import com.leandrour.chat.domain.chat.ChatService
 import com.leandrour.chat.domain.models.Chat
+import com.leandrour.core.data.networking.delete
 import com.leandrour.core.data.networking.get
 import com.leandrour.core.data.networking.post
 import com.leandrour.core.domain.util.DataError
+import com.leandrour.core.domain.util.EmptyResult
 import com.leandrour.core.domain.util.Result
+import com.leandrour.core.domain.util.asEmptyResult
 import com.leandrour.core.domain.util.map
 import io.ktor.client.HttpClient
+import io.ktor.client.request.delete
 
 class KtorChatServiceImpl(
     private val httpClient: HttpClient
@@ -37,5 +41,11 @@ class KtorChatServiceImpl(
         return httpClient.get<ChatDto>(
             route = "/chat/$chatId"
         ).map { it.toDomain() }
+    }
+
+    override suspend fun leaveChat(chatId: String): EmptyResult<DataError.Remote> {
+        return httpClient.delete<Unit>(
+            route = "/chat/$chatId/leave"
+        ).asEmptyResult()
     }
 }
