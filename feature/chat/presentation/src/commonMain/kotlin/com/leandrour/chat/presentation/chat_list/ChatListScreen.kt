@@ -35,7 +35,7 @@ import chirp.feature.chat.presentation.generated.resources.no_chats
 import chirp.feature.chat.presentation.generated.resources.no_chats_subtitle
 import com.leandrour.chat.presentation.chat_list.components.ChatListHeader
 import com.leandrour.chat.presentation.chat_list.components.ChatListItemUi
-import com.leandrour.chat.presentation.components.EmptyListSection
+import com.leandrour.chat.presentation.components.EmptySection
 import com.leandrour.chat.presentation.model.ChatUi
 import com.leandrour.core.designsystem.components.brand.ChirpHorizontalDivider
 import com.leandrour.core.designsystem.components.buttons.ChirpFloatingActionButton
@@ -130,7 +130,7 @@ fun ChatListScreen(
                 }
 
                 state.chats.isEmpty() -> {
-                    EmptyListSection(
+                    EmptySection(
                         title = stringResource(Res.string.no_chats),
                         description = stringResource(Res.string.no_chats_subtitle),
                         modifier = Modifier

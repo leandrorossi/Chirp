@@ -14,16 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import chirp.feature.chat.presentation.generated.resources.Res
 import chirp.feature.chat.presentation.generated.resources.empty_chat
-import chirp.feature.chat.presentation.generated.resources.no_messages
-import chirp.feature.chat.presentation.generated.resources.no_messages_subtitle
 import com.leandrour.core.designsystem.theme.extended
 import com.leandrour.core.presentation.util.DeviceConfiguration
 import com.leandrour.core.presentation.util.currentDeviceConfiguration
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun EmptyListSection(
+fun EmptySection(
     title: String,
     description: String,
     modifier: Modifier = Modifier
