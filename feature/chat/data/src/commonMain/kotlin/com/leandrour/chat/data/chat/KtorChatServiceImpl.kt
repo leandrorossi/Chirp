@@ -2,6 +2,7 @@ package com.leandrour.chat.data.chat
 
 import com.leandrour.chat.data.dto.ChatDto
 import com.leandrour.chat.data.dto.CreateChatRequestDto
+import com.leandrour.chat.data.dto.ParticipantRequest
 import com.leandrour.chat.data.mappers.toDomain
 import com.leandrour.chat.domain.chat.ChatService
 import com.leandrour.chat.domain.models.Chat
@@ -45,7 +46,19 @@ class KtorChatServiceImpl(
 
     override suspend fun leaveChat(chatId: String): EmptyResult<DataError.Remote> {
         return httpClient.delete<Unit>(
-            route = "/chat/$chatId/leave"
+            route = "/chat/leave/$chatId"
         ).asEmptyResult()
+    }
+
+    override suspend fun addParticipantsToChat(
+        chatId: String,
+        userIds: List<String>
+    ): Result<Chat, DataError.Remote> {
+        return httpClient.post<ParticipantRequest, ChatDto>(
+            route = "/chat/$chatId/add",
+            body = ParticipantRequest(
+                userIds = userIds
+            )
+        ).map { it.toDomain() }
     }
 }

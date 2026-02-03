@@ -11,6 +11,7 @@ import com.leandrour.chat.domain.chat.ChatRepository
 import com.leandrour.chat.domain.chat.ChatService
 import com.leandrour.chat.domain.models.Chat
 import com.leandrour.chat.domain.models.ChatInfo
+import com.leandrour.chat.domain.models.ChatParticipant
 import com.leandrour.core.domain.util.DataError
 import com.leandrour.core.domain.util.EmptyResult
 import com.leandrour.core.domain.util.Result
@@ -62,6 +63,13 @@ class OfflineFirstChatRepositoryImpl(
                 )
             }
             .map { it.toDomain() }
+    }
+
+    override fun getActiveParticipantsByChatId(chatId: String): Flow<List<ChatParticipant>> {
+        return db.chatDao.getActiveParticipantsByChatId(chatId)
+            .map { participants ->
+                participants.map { it.toDomain() }
+            }
     }
 
     override suspend fun fetchChats(): Result<List<Chat>, DataError.Remote> {
@@ -117,6 +125,22 @@ class OfflineFirstChatRepositoryImpl(
             .leaveChat(chatId)
             .onSuccess {
                 db.chatDao.deleteChatById(chatId)
+            }
+    }
+
+    override suspend fun addParticipantsToChat(
+        chatId: String,
+        userIds: List<String>
+    ): Result<Chat, DataError.Remote> {
+        return chatService
+            .addParticipantsToChat(chatId, userIds)
+            .onSuccess { chat ->
+                db.chatDao.upsertChatWithParticipantsAndCrossRefs(
+                    chat = chat.toEntity(),
+                    participants = chat.participants.map { it.toEntity() },
+                    participantDao = db.chatParticipantDao,
+                    crossRefDao = db.chatParticipantsCrossRefDao
+                )
             }
     }
 
