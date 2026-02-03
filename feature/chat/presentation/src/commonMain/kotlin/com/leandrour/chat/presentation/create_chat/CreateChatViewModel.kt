@@ -10,7 +10,8 @@ import chirp.feature.chat.presentation.generated.resources.Res
 import chirp.feature.chat.presentation.generated.resources.error_participant_not_found
 import com.leandrour.chat.domain.chat.ChatParticipantService
 import com.leandrour.chat.domain.chat.ChatRepository
-import com.leandrour.chat.domain.chat.ChatService
+import com.leandrour.chat.presentation.components.manage_chats.ManageChatAction
+import com.leandrour.chat.presentation.components.manage_chats.ManageChatState
 import com.leandrour.chat.presentation.mappers.toUi
 import com.leandrour.core.domain.util.DataError
 import com.leandrour.core.domain.util.onFailure
@@ -38,7 +39,7 @@ class CreateChatViewModel(
 
     private var hasLoadedInitialData = false
 
-    private val _state = MutableStateFlow(CreateChatState())
+    private val _state = MutableStateFlow(ManageChatState())
 
     private val eventChannel = Channel<CreateChatEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -59,13 +60,13 @@ class CreateChatViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000L),
-            initialValue = CreateChatState()
+            initialValue = ManageChatState()
         )
 
-    fun onAction(action: CreateChatAction) {
+    fun onAction(action: ManageChatAction) {
         when (action) {
-            CreateChatAction.OnAddClick -> addParticipant()
-            CreateChatAction.OnCreateChatClick -> createChat()
+            ManageChatAction.OnAddClick -> addParticipant()
+            ManageChatAction.OnPrimaryActionClick -> createChat()
             else -> Unit
         }
     }
