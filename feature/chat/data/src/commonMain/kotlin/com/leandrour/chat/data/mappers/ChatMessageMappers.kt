@@ -1,6 +1,7 @@
 package com.leandrour.chat.data.mappers
 
 import com.leandrour.chat.data.dto.ChatMessageDto
+import com.leandrour.chat.data.dto.IncomingWebSocketDto
 import com.leandrour.chat.data.dto.OutgoingWebSocketDto
 import com.leandrour.chat.database.entities.ChatMessageEntity
 import com.leandrour.chat.database.view.LastMessageView
@@ -68,5 +69,16 @@ fun ChatMessage.toNewMessage(): OutgoingWebSocketDto.NewMessage {
         messageId = id,
         chatId = chatId,
         content = content
+    )
+}
+
+fun IncomingWebSocketDto.NewMessageDto.toEntity(): ChatMessageEntity {
+    return ChatMessageEntity(
+        messageId = id,
+        chatId = chatId,
+        senderId = senderId,
+        content = content,
+        timestamp = Instant.parse(createdAt).toEpochMilliseconds(),
+        deliveryStatus = ChatMessageDeliveryStatus.SENT.name
     )
 }

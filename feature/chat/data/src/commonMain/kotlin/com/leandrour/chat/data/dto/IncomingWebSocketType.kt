@@ -20,11 +20,11 @@ sealed class IncomingWebSocketDto(
         val chatId: String,
         val content: String,
         val senderId: String,
-        val createAt: String
+        val createdAt: String
     ) : IncomingWebSocketDto(IncomingWebSocketType.NEW_MESSAGE)
 
     @Serializable
-    data class MessageDeleteDto(
+    data class MessageDeletedDto(
         val messageId: String,
         val chatId: String
     ) : IncomingWebSocketDto(IncomingWebSocketType.MESSAGE_DELETED)

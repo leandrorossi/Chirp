@@ -1,6 +1,10 @@
 package com.leandrour.chat.data.chat
 
+import com.leandrour.chat.data.dto.IncomingWebSocketDto
+import com.leandrour.chat.data.dto.IncomingWebSocketType
 import com.leandrour.chat.data.dto.WebSocketMessageDto
+import com.leandrour.chat.data.mappers.toDomain
+import com.leandrour.chat.data.mappers.toEntity
 import com.leandrour.chat.data.mappers.toNewMessage
 import com.leandrour.chat.data.network.KtorWebSocketConnector
 import com.leandrour.chat.database.ChirpChatDatabase
@@ -13,7 +17,13 @@ import com.leandrour.chat.domain.models.ChatMessageDeliveryStatus
 import com.leandrour.core.domain.auth.SessionStorage
 import com.leandrour.core.domain.util.EmptyResult
 import com.leandrour.core.domain.util.onFailure
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.serialization.json.Json
 
 class WebSocketChatConnectionClientImpl(
@@ -22,11 +32,22 @@ class WebSocketChatConnectionClientImpl(
     private val db: ChirpChatDatabase,
     private val sessionStorage: SessionStorage,
     private val json: Json,
-    private val messageRepository: MessageRepository
+    private val messageRepository: MessageRepository,
+    private val applicationScope: CoroutineScope
 ) : ChatConnectionClient {
 
-    override val chatMessages: Flow<ChatMessage>
-        get() = TODO("Not yet implemented")
+    override val chatMessages = webSocketConnector
+        .messages
+        .mapNotNull { parseIncomingMessage(it) }
+        .onEach { handleIncomingMessage(it) }
+        .filterIsInstance<IncomingWebSocketDto.NewMessageDto>()
+        .mapNotNull {
+            db.chatMessageDao.getMessageById(it.id)?.toDomain()
+        }
+        .shareIn(
+            scope = applicationScope,
+            started = SharingStarted.WhileSubscribed(5000),
+        )
 
     override val connectionState = webSocketConnector.connectionState
 
@@ -46,5 +67,72 @@ class WebSocketChatConnectionClientImpl(
                     status = ChatMessageDeliveryStatus.FAILED
                 )
             }
+    }
+
+    private fun parseIncomingMessage(message: WebSocketMessageDto): IncomingWebSocketDto? {
+        return when (message.type) {
+            IncomingWebSocketType.NEW_MESSAGE.name -> {
+                json.decodeFromString<IncomingWebSocketDto.NewMessageDto>(message.payload)
+            }
+
+            IncomingWebSocketType.MESSAGE_DELETED.name -> {
+                json.decodeFromString<IncomingWebSocketDto.MessageDeletedDto>(message.payload)
+            }
+
+            IncomingWebSocketType.PROFILE_PICTURE_UPDATED.name -> {
+                json.decodeFromString<IncomingWebSocketDto.ProfilePictureUpdatedDto>(message.payload)
+            }
+
+            IncomingWebSocketType.CHAT_PARTICIPANTS_CHANGED.name -> {
+                json.decodeFromString<IncomingWebSocketDto.ChatParticipantsChangedDto>(message.payload)
+            }
+
+            else -> null
+        }
+    }
+
+    private suspend fun handleIncomingMessage(message: IncomingWebSocketDto) {
+        when (message) {
+            is IncomingWebSocketDto.ChatParticipantsChangedDto -> refreshChat(message)
+            is IncomingWebSocketDto.MessageDeletedDto -> deleteMessage(message)
+            is IncomingWebSocketDto.NewMessageDto -> handleNewMessage(message)
+            is IncomingWebSocketDto.ProfilePictureUpdatedDto -> updateProfilePicture(message)
+        }
+    }
+
+    private suspend fun refreshChat(message: IncomingWebSocketDto.ChatParticipantsChangedDto) {
+        chatRepository.fetchChatById(message.chatId)
+    }
+
+    private suspend fun deleteMessage(message: IncomingWebSocketDto.MessageDeletedDto) {
+        db.chatMessageDao.deleteMessageById(message.messageId)
+    }
+
+    private suspend fun handleNewMessage(message: IncomingWebSocketDto.NewMessageDto) {
+        val chatExists = db.chatDao.getChatById(message.chatId) != null
+        if (!chatExists) {
+            chatRepository.fetchChatById(message.chatId)
+        }
+
+        val entity = message.toEntity()
+        db.chatMessageDao.upsertMessage(entity)
+    }
+
+    private suspend fun updateProfilePicture(message: IncomingWebSocketDto.ProfilePictureUpdatedDto) {
+        db.chatParticipantDao.updateProfilePictureUrl(
+            userId = message.userId,
+            newUrl = message.newUrl
+        )
+
+        val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
+        if (authInfo != null) {
+            sessionStorage.set(
+                info = authInfo.copy(
+                    user = authInfo.user.copy(
+                        profilePictureUrl = message.newUrl
+                    )
+                )
+            )
+        }
     }
 }
