@@ -74,6 +74,9 @@ fun ChatDetailRoot(
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             is ChatDetailEvent.OnChatLeft -> onBack()
+            is ChatDetailEvent.OnNewMessage -> {
+                // TODO: Auto scroll to bottom
+            }
             is ChatDetailEvent.OnError -> {
                 snackbarState.showSnackbar(event.error.asStringAsync())
             }
