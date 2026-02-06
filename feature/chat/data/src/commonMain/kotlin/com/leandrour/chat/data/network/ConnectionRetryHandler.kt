@@ -22,7 +22,7 @@ class ConnectionRetryHandler(
     }
 
     fun resetDelay() {
-        shouldSkipBackoff = false
+        shouldSkipBackoff = true
     }
 
     private fun createBackoffDelay(attempt: Long): Long {
