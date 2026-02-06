@@ -1,14 +1,16 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
+@file:OptIn(ExperimentalCoroutinesApi::class, ExperimentalUuidApi::class)
 
 package com.leandrour.chat.presentation.chat_detail
 
 import androidx.compose.foundation.text.input.clearText
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.leandrour.chat.domain.chat.ChatConnectionClient
 import com.leandrour.chat.domain.chat.ChatRepository
 import com.leandrour.chat.domain.message.MessageRepository
 import com.leandrour.chat.domain.models.ConnectionState
+import com.leandrour.chat.domain.models.OutgoingNewMessage
 import com.leandrour.chat.presentation.mappers.toUi
 import com.leandrour.core.domain.auth.SessionStorage
 import com.leandrour.core.domain.util.onFailure
@@ -30,6 +32,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class ChatDetailViewModel(
     private val chatRepository: ChatRepository,
@@ -51,6 +55,12 @@ class ChatDetailViewModel(
             if (chatId != null) {
                 chatRepository.getChatInfoById(chatId)
             } else emptyFlow()
+        }
+
+    private val canSendMessage = snapshotFlow { _state.value.messageTextFieldState.text.toString() }
+        .map { it.isBlank() }
+        .combine(connectionClient.connectionState) { isMessageBlank, connectionState ->
+            !isMessageBlank && connectionState == ConnectionState.CONNECTED
         }
 
     private val stateWithMessages = combine(
@@ -79,6 +89,7 @@ class ChatDetailViewModel(
             if (!hasLoadedInitialData) {
                 observeConnectionState()
                 observeChatMessages()
+                observeCanSendMessage()
                 hasLoadedInitialData = true
             }
         }
@@ -101,8 +112,34 @@ class ChatDetailViewModel(
             is ChatDetailAction.OnMessageLongClick -> {}
             is ChatDetailAction.OnRetryClick -> {}
             ChatDetailAction.OnScrollToTop -> {}
-            ChatDetailAction.OnSendMessageClick -> {}
+            ChatDetailAction.OnSendMessageClick -> sendMessage()
             else -> Unit
+        }
+    }
+
+    private fun sendMessage() {
+        val currentChatId = _chatId.value
+        val content = state.value.messageTextFieldState.text.toString().trim()
+
+        if (currentChatId == null || content.isBlank()) {
+            return
+        }
+
+        viewModelScope.launch {
+            val message = OutgoingNewMessage(
+                chatId = currentChatId,
+                messageId = Uuid.random().toString(),
+                content = content
+            )
+
+            messageRepository
+                .sendMessage(message)
+                .onSuccess {
+                    state.value.messageTextFieldState.clearText()
+                }
+                .onFailure { error ->
+                    eventChannel.send(ChatDetailEvent.OnError(error.toUiText()))
+                }
         }
     }
 
@@ -173,7 +210,7 @@ class ChatDetailViewModel(
 
         val newMessages = _chatId.flatMapLatest { chatId ->
             if (chatId != null) {
-                messageRepository.getMessageForChat(chatId)
+                messageRepository.getMessagesForChat(chatId)
             } else emptyFlow()
         }
             .combine(sessionStorage.observeAuthInfo()) { messages, authInfo ->
@@ -195,10 +232,10 @@ class ChatDetailViewModel(
             newMessages,
             isNearBottom
         ) { currentMessages, newMessages, isNearBottom ->
-            val latNewId = newMessages.lastOrNull()?.message?.id
+            val lastNewId = newMessages.lastOrNull()?.message?.id
             val lastCurrentId = currentMessages.lastOrNull()?.id
 
-            if (latNewId != lastCurrentId && isNearBottom) {
+            if (lastNewId != lastCurrentId && isNearBottom) {
                 eventChannel.send(ChatDetailEvent.OnNewMessage)
             }
         }.launchIn(viewModelScope)
@@ -221,5 +258,15 @@ class ChatDetailViewModel(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun observeCanSendMessage() {
+        canSendMessage.onEach { canSend ->
+            _state.update {
+                it.copy(
+                    canSendMessage = canSend
+                )
+            }
+        }.launchIn(viewModelScope)
     }
 }

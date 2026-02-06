@@ -3,6 +3,7 @@ package com.leandrour.chat.domain.message
 import com.leandrour.chat.domain.models.ChatMessage
 import com.leandrour.chat.domain.models.ChatMessageDeliveryStatus
 import com.leandrour.chat.domain.models.MessageWithSender
+import com.leandrour.chat.domain.models.OutgoingNewMessage
 import com.leandrour.core.domain.util.DataError
 import com.leandrour.core.domain.util.EmptyResult
 import com.leandrour.core.domain.util.Result
@@ -19,5 +20,7 @@ interface MessageRepository {
         before: String? = null,
     ): Result<List<ChatMessage>, DataError>
 
-    fun getMessageForChat(chatId: String): Flow<List<MessageWithSender>>
+    suspend fun sendMessage(message: OutgoingNewMessage): EmptyResult<DataError>
+
+    fun getMessagesForChat(chatId: String): Flow<List<MessageWithSender>>
 }

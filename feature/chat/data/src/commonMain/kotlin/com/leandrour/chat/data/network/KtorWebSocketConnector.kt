@@ -4,11 +4,11 @@ package com.leandrour.chat.data.network
 
 import com.leandrour.chat.data.dto.WebSocketMessageDto
 import com.leandrour.chat.data.lifecycle.AppLifecycleObserver
-import com.leandrour.chat.domain.error.ConnectionError
 import com.leandrour.chat.domain.models.ConnectionState
 import com.leandrour.core.data.networking.UrlConstants
 import com.leandrour.core.domain.auth.SessionStorage
 import com.leandrour.core.domain.logging.ChirpLogger
+import com.leandrour.core.domain.util.DataError
 import com.leandrour.core.domain.util.EmptyResult
 import com.leandrour.core.domain.util.Result
 import io.ktor.client.HttpClient
@@ -207,11 +207,11 @@ class KtorWebSocketConnector(
         }
     }
 
-    suspend fun sendMessage(message: String): EmptyResult<ConnectionError> {
+    suspend fun sendMessage(message: String): EmptyResult<DataError.Connection> {
         val connectionState = connectionState.value
 
         if (currentSession == null || connectionState != ConnectionState.CONNECTED) {
-            return Result.Failure(ConnectionError.NOT_CONNECTED)
+            return Result.Failure(DataError.Connection.NOT_CONNECTED)
         }
 
         return try {
@@ -220,7 +220,7 @@ class KtorWebSocketConnector(
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
             logger.error("Unable to send WebSocket message", e)
-            Result.Failure(ConnectionError.MESSAGE_SEND_FAILED)
+            Result.Failure(DataError.Connection.MESSAGE_SEND_FAILED)
         }
     }
 }

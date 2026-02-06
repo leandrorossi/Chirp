@@ -29,6 +29,7 @@ interface ChatMessageDao {
 
     @Query("SELECT * FROM chatmessageentity WHERE chatId = :chatId ORDER BY timestamp DESC")
     fun getMessagesByChatId(chatId: String): Flow<List<MessageWithSender>>
+
     @Query("""
         SELECT *
         FROM chatmessageentity
@@ -46,7 +47,7 @@ interface ChatMessageDao {
     suspend fun updateDeliveryStatus(messageId: String, status: String, timestamp: Long)
 
     @Transaction
-    suspend fun upsertMessageAndSyncIfNecessary(
+    suspend fun upsertMessagesAndSyncIfNecessary(
         chatId: String,
         serverMessages: List<ChatMessageEntity>,
         pageSize: Int,
