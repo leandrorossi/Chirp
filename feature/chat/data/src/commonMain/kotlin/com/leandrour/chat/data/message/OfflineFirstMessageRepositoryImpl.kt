@@ -54,11 +54,10 @@ class OfflineFirstMessageRepositoryImpl(
                 .sendMessage(dto.toJsonPayload())
                 .onFailure { error ->
                     applicationScope.launch {
-                        db.chatMessageDao.upsertMessage(
-                            dto.toEntity(
-                                senderId = localUser.id,
-                                deliveryStatus = ChatMessageDeliveryStatus.FAILED
-                            )
+                        db.chatMessageDao.updateDeliveryStatus(
+                            messageId = entity.messageId,
+                            timestamp = Clock.System.now().toEpochMilliseconds(),
+                            status = ChatMessageDeliveryStatus.FAILED.name
                         )
                     }.join()
                 }
@@ -95,6 +94,37 @@ class OfflineFirstMessageRepositoryImpl(
                     messages
                 }
             }
+    }
+
+    override suspend fun retryMessage(messageId: String): EmptyResult<DataError> {
+        return safeDatabaseUpdate {
+            val message = db.chatMessageDao.getMessageById(messageId)
+                ?: return Result.Failure(DataError.Local.NOT_FOUND)
+
+            db.chatMessageDao.upsertMessage(
+                message.copy(
+                    deliveryStatus = ChatMessageDeliveryStatus.SENDING.name,
+                    timestamp = Clock.System.now().toEpochMilliseconds()
+                )
+            )
+
+            val outgoingNewMessage = OutgoingWebSocketDto.NewMessage(
+                chatId = message.chatId,
+                messageId = messageId,
+                content = message.content
+            )
+            return webSocketConnector
+                .sendMessage(outgoingNewMessage.toJsonPayload())
+                .onFailure {
+                    applicationScope.launch {
+                        db.chatMessageDao.updateDeliveryStatus(
+                            messageId = messageId,
+                            timestamp = Clock.System.now().toEpochMilliseconds(),
+                            status = ChatMessageDeliveryStatus.FAILED.name
+                        )
+                    }.join()
+                }
+        }
     }
 
     override fun getMessagesForChat(chatId: String): Flow<List<MessageWithSender>> {

@@ -12,6 +12,7 @@ import com.leandrour.chat.domain.message.MessageRepository
 import com.leandrour.chat.domain.models.ConnectionState
 import com.leandrour.chat.domain.models.OutgoingNewMessage
 import com.leandrour.chat.presentation.mappers.toUi
+import com.leandrour.chat.presentation.model.MessageUi
 import com.leandrour.core.domain.auth.SessionStorage
 import com.leandrour.core.domain.util.onFailure
 import com.leandrour.core.domain.util.onSuccess
@@ -73,7 +74,8 @@ class ChatDetailViewModel(
         }
 
         currentState.copy(
-            chatUi = chatInfo.chat.toUi(authInfo.user.id)
+            chatUi = chatInfo.chat.toUi(authInfo.user.id),
+            messages = chatInfo.messages.map { it.toUi(authInfo.user.id) }
         )
     }
 
@@ -110,7 +112,7 @@ class ChatDetailViewModel(
             ChatDetailAction.OnDismissMessageMenu -> {}
             ChatDetailAction.OnLeaveChatClick -> onLeaveChatClick()
             is ChatDetailAction.OnMessageLongClick -> {}
-            is ChatDetailAction.OnRetryClick -> {}
+            is ChatDetailAction.OnRetryClick -> retryMessage(action.message)
             ChatDetailAction.OnScrollToTop -> {}
             ChatDetailAction.OnSendMessageClick -> sendMessage()
             else -> Unit
@@ -137,6 +139,16 @@ class ChatDetailViewModel(
                 .onSuccess {
                     state.value.messageTextFieldState.clearText()
                 }
+                .onFailure { error ->
+                    eventChannel.send(ChatDetailEvent.OnError(error.toUiText()))
+                }
+        }
+    }
+
+    private fun retryMessage(message: MessageUi.LocalUserMessage) {
+        viewModelScope.launch {
+            messageRepository
+                .retryMessage(message.id)
                 .onFailure { error ->
                     eventChannel.send(ChatDetailEvent.OnError(error.toUiText()))
                 }
@@ -213,17 +225,6 @@ class ChatDetailViewModel(
                 messageRepository.getMessagesForChat(chatId)
             } else emptyFlow()
         }
-            .combine(sessionStorage.observeAuthInfo()) { messages, authInfo ->
-                if (authInfo == null) {
-                    return@combine messages
-                }
-                _state.update {
-                    it.copy(
-                        messages = messages.map { it.toUi(authInfo.user.id) }
-                    )
-                }
-                messages
-            }
 
         val isNearBottom = state.map { it.isNearBottom }.distinctUntilChanged()
 
