@@ -4,8 +4,10 @@ import com.leandrour.chat.data.dto.ChatMessageDto
 import com.leandrour.chat.data.mappers.toDomain
 import com.leandrour.chat.domain.message.ChatMessageService
 import com.leandrour.chat.domain.models.ChatMessage
+import com.leandrour.core.data.networking.delete
 import com.leandrour.core.data.networking.get
 import com.leandrour.core.domain.util.DataError
+import com.leandrour.core.domain.util.EmptyResult
 import com.leandrour.core.domain.util.Result
 import com.leandrour.core.domain.util.map
 import io.ktor.client.HttpClient
@@ -27,5 +29,11 @@ class KtorChatMessageServiceImpl(
                 }
             }
         ).map { it.map { it.toDomain() } }
+    }
+
+    override suspend fun deleteMessage(messageId: String): EmptyResult<DataError.Remote> {
+        return httpClient.delete(
+            route = "/messages/$messageId"
+        )
     }
 }
