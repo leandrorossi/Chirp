@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -43,6 +41,7 @@ import com.leandrour.chat.domain.models.ChatMessageDeliveryStatus
 import com.leandrour.chat.presentation.chat_detail.components.ChatDetailHeader
 import com.leandrour.chat.presentation.chat_detail.components.MessageBox
 import com.leandrour.chat.presentation.chat_detail.components.MessageList
+import com.leandrour.chat.presentation.chat_detail.components.PaginationScrollListener
 import com.leandrour.chat.presentation.components.ChatHeader
 import com.leandrour.chat.presentation.components.EmptySection
 import com.leandrour.chat.presentation.model.ChatUi
@@ -80,6 +79,7 @@ fun ChatDetailRoot(
             is ChatDetailEvent.OnNewMessage -> {
                 // TODO: Auto scroll to bottom
             }
+
             is ChatDetailEvent.OnError -> {
                 snackbarState.showSnackbar(event.error.asStringAsync())
             }
@@ -124,6 +124,22 @@ fun ChatDetailScreen(
 ) {
     val configuration = currentDeviceConfiguration()
     val messageListState = rememberLazyListState()
+
+    val realMessageItemCount = remember(state.messages) {
+        state.messages
+            .filter { it is MessageUi.LocalUserMessage || it is MessageUi.OtherUserMessage }
+            .size
+    }
+
+    PaginationScrollListener(
+        lazyListState = messageListState,
+        itemCount = realMessageItemCount,
+        isPaginationLoading = state.isPaginationLoading,
+        isEndReached = state.endReached,
+        onNearTop = {
+            onAction(ChatDetailAction.OnScrollToTop)
+        }
+    )
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -190,6 +206,8 @@ fun ChatDetailScreen(
 
                     MessageList(
                         messages = state.messages,
+                        isPaginationLoading = state.isPaginationLoading,
+                        paginationError = state.paginationError?.asString(),
                         messageWithOpenMenu = state.messageWithOpenMenu,
                         listState = messageListState,
                         onMessageLongClick = { message ->
@@ -203,6 +221,9 @@ fun ChatDetailScreen(
                         },
                         onDeleteMessageClick = { message ->
                             onAction(ChatDetailAction.OnDeleteMessageClick(message))
+                        },
+                        onRetryPaginationClick = {
+                            onAction(ChatDetailAction.OnRetryPaginationClick)
                         },
                         modifier = Modifier
                             .fillMaxWidth()

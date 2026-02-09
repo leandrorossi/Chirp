@@ -9,11 +9,15 @@ import androidx.lifecycle.viewModelScope
 import com.leandrour.chat.domain.chat.ChatConnectionClient
 import com.leandrour.chat.domain.chat.ChatRepository
 import com.leandrour.chat.domain.message.MessageRepository
+import com.leandrour.chat.domain.models.ChatMessage
 import com.leandrour.chat.domain.models.ConnectionState
 import com.leandrour.chat.domain.models.OutgoingNewMessage
 import com.leandrour.chat.presentation.mappers.toUi
+import com.leandrour.chat.presentation.mappers.toUiList
 import com.leandrour.chat.presentation.model.MessageUi
 import com.leandrour.core.domain.auth.SessionStorage
+import com.leandrour.core.domain.util.DataErrorException
+import com.leandrour.core.domain.util.Paginator
 import com.leandrour.core.domain.util.onFailure
 import com.leandrour.core.domain.util.onSuccess
 import com.leandrour.core.presentation.util.toUiText
@@ -45,6 +49,8 @@ class ChatDetailViewModel(
 
     private var hasLoadedInitialData = false
 
+    private var currentPaginator: Paginator<String?, ChatMessage>? = null
+
     private val eventChannel = Channel<ChatDetailEvent>()
     val events = eventChannel.receiveAsFlow()
 
@@ -52,6 +58,13 @@ class ChatDetailViewModel(
     private val _state = MutableStateFlow(ChatDetailState())
 
     private val chatInfoFlow = _chatId
+        .onEach { chatId ->
+            if (chatId != null) {
+                setupPaginatorForChat(chatId)
+            } else {
+                currentPaginator = null
+            }
+        }
         .flatMapLatest { chatId ->
             if (chatId != null) {
                 chatRepository.getChatInfoById(chatId)
@@ -75,7 +88,7 @@ class ChatDetailViewModel(
 
         currentState.copy(
             chatUi = chatInfo.chat.toUi(authInfo.user.id),
-            messages = chatInfo.messages.map { it.toUi(authInfo.user.id) }
+            messages = chatInfo.messages.toUiList(authInfo.user.id)
         )
     }
 
@@ -113,9 +126,9 @@ class ChatDetailViewModel(
             ChatDetailAction.OnLeaveChatClick -> onLeaveChatClick()
             is ChatDetailAction.OnMessageLongClick -> onMessageLongClick(action.message)
             is ChatDetailAction.OnRetryClick -> retryMessage(action.message)
-            ChatDetailAction.OnScrollToTop -> {}
+            ChatDetailAction.OnScrollToTop -> onScrollToTop()
             ChatDetailAction.OnSendMessageClick -> sendMessage()
-            else -> Unit
+            ChatDetailAction.OnRetryPaginationClick -> retryPagination()
         }
     }
 
@@ -241,6 +254,59 @@ class ChatDetailViewModel(
         }
     }
 
+    private fun retryPagination() = loadNextItems()
+
+    private fun onScrollToTop() = loadNextItems()
+
+    private fun loadNextItems() {
+        viewModelScope.launch {
+            currentPaginator?.loadNextItems()
+        }
+    }
+
+    private fun setupPaginatorForChat(chatId: String) {
+        currentPaginator = Paginator(
+            initialKey = null,
+            onLoadUpdated = { isLoading ->
+                _state.update {
+                    it.copy(
+                        isPaginationLoading = isLoading
+                    )
+                }
+            },
+            onRequest = { beforeTimestamp ->
+                messageRepository.fetchMessages(chatId, beforeTimestamp)
+            },
+            getNextKey = { messages ->
+                messages.minOfOrNull { it.createdAt }?.toString()
+            },
+            onError = { throwable ->
+                if (throwable is DataErrorException) {
+                    _state.update {
+                        it.copy(
+                            paginationError = throwable.error.toUiText()
+                        )
+                    }
+                }
+            },
+            onSuccess = { messages, _ ->
+                _state.update {
+                    it.copy(
+                        endReached = messages.isEmpty(),
+                        paginationError = null
+                    )
+                }
+            }
+        )
+
+        _state.update {
+            it.copy(
+                endReached = false,
+                isPaginationLoading = false,
+            )
+        }
+    }
+
     private fun observeChatMessages() {
         val currentMessages = state
             .map { it.messages }
@@ -273,9 +339,7 @@ class ChatDetailViewModel(
             .connectionState
             .onEach { connectionState ->
                 if (connectionState == ConnectionState.CONNECTED) {
-                    _chatId.value?.let {
-                        messageRepository.fetchMessages(it, before = null)
-                    }
+                    currentPaginator?.loadNextItems()
                 }
 
                 _state.update {

@@ -4,6 +4,12 @@ import com.leandrour.chat.domain.models.MessageWithSender
 import com.leandrour.chat.presentation.model.MessageUi
 import com.leandrour.chat.presentation.util.DateUtils
 
+fun List<MessageWithSender>.toUiList(localUserId: String): List<MessageUi> {
+    return this
+        .sortedByDescending { it.message.createdAt }
+        .map { it.toUi(localUserId) }
+}
+
 fun MessageWithSender.toUi(localUserId: String): MessageUi {
     val isFromLocalUser = this.sender.userId == localUserId
     return if (isFromLocalUser) {
