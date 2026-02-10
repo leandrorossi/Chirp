@@ -35,7 +35,7 @@ fun MessageListItemUi(
         modifier = modifier
     ) {
         when (messageUi) {
-            is MessageUi.DataSeparator -> {
+            is MessageUi.DateSeparator -> {
                 DateSeparatorUi(
                     date = messageUi.date.asString(),
                     modifier = Modifier.fillMaxWidth()

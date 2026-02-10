@@ -19,7 +19,7 @@ sealed class MessageUi(open val id: String) {
         val sender: ChatParticipantUi
     ) : MessageUi(id)
 
-    data class DataSeparator(
+    data class DateSeparator(
         override val id: String,
         val date: UiText
     ) : MessageUi(id)
