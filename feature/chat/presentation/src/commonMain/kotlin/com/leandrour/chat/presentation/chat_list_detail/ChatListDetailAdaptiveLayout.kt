@@ -22,6 +22,7 @@ import com.leandrour.chat.presentation.chat_detail.ChatDetailRoot
 import com.leandrour.chat.presentation.chat_list.ChatListRoot
 import com.leandrour.chat.presentation.create_chat.CreateChatRoot
 import com.leandrour.chat.presentation.manage_chats.ManageChatRoot
+import com.leandrour.chat.presentation.profile.ProfileRoot
 import com.leandrour.core.designsystem.theme.extended
 import com.leandrour.core.presentation.util.DialogSheetScopedViewModel
 import kotlinx.coroutines.launch
@@ -126,6 +127,16 @@ fun ChatListDetailAdaptiveLayout(
             onMembersAdded = {
                 chatListDetailViewModel.onAction(ChatListDetailAction.OnDismissCurrentDialog)
             },
+            onDismiss = {
+                chatListDetailViewModel.onAction(ChatListDetailAction.OnDismissCurrentDialog)
+            }
+        )
+    }
+
+    DialogSheetScopedViewModel(
+        visible = sharedState.dialogState is DialogState.Profile
+    ) {
+        ProfileRoot(
             onDismiss = {
                 chatListDetailViewModel.onAction(ChatListDetailAction.OnDismissCurrentDialog)
             }
