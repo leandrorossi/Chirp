@@ -7,6 +7,7 @@ import com.leandrour.chat.data.mappers.toDomain
 import com.leandrour.chat.domain.models.ChatParticipant
 import com.leandrour.chat.domain.models.ProfilePictureUploadUrls
 import com.leandrour.chat.domain.participant.ChatParticipantService
+import com.leandrour.core.data.networking.delete
 import com.leandrour.core.data.networking.get
 import com.leandrour.core.data.networking.post
 import com.leandrour.core.data.networking.safeCall
@@ -69,6 +70,12 @@ class KtorChatParticipantServiceImpl(
         return httpClient.post<ConfirmProfilePictureDto, Unit>(
             route = "/participants/confirm-profile-picture",
             body = ConfirmProfilePictureDto(publicUrl)
+        )
+    }
+
+    override suspend fun deleteProfilePicture(): EmptyResult<DataError.Remote> {
+        return httpClient.delete(
+            route = "/participants/profile-picture"
         )
     }
 }
