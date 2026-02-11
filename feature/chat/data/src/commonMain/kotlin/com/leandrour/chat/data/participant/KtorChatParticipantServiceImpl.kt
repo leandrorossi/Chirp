@@ -1,9 +1,9 @@
-package com.leandrour.chat.data.chat
+package com.leandrour.chat.data.participant
 
 import com.leandrour.chat.data.dto.ChatParticipantDto
 import com.leandrour.chat.data.mappers.toDomain
-import com.leandrour.chat.domain.chat.ChatParticipantService
 import com.leandrour.chat.domain.models.ChatParticipant
+import com.leandrour.chat.domain.participant.ChatParticipantService
 import com.leandrour.core.data.networking.get
 import com.leandrour.core.domain.util.DataError
 import com.leandrour.core.domain.util.Result
@@ -12,7 +12,7 @@ import io.ktor.client.HttpClient
 
 class KtorChatParticipantServiceImpl(
     private val httpClient: HttpClient
-) : ChatParticipantService{
+) : ChatParticipantService {
 
     override suspend fun searchParticipant(query: String): Result<ChatParticipant, DataError.Remote> {
         return httpClient.get<ChatParticipantDto>(
@@ -20,6 +20,12 @@ class KtorChatParticipantServiceImpl(
             queryParams = mapOf(
                 "query" to query
             )
+        ).map { it.toDomain() }
+    }
+
+    override suspend fun getLocalParticipant(): Result<ChatParticipant, DataError.Remote> {
+        return httpClient.get<ChatParticipantDto>(
+            route = "/participants"
         ).map { it.toDomain() }
     }
 }

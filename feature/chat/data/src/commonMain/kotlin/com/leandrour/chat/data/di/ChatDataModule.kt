@@ -1,7 +1,7 @@
 package com.leandrour.chat.data.di
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import com.leandrour.chat.data.chat.KtorChatParticipantServiceImpl
+import com.leandrour.chat.data.participant.KtorChatParticipantServiceImpl
 import com.leandrour.chat.data.chat.KtorChatServiceImpl
 import com.leandrour.chat.data.chat.OfflineFirstChatRepositoryImpl
 import com.leandrour.chat.data.chat.WebSocketChatConnectionClientImpl
@@ -10,13 +10,15 @@ import com.leandrour.chat.data.message.OfflineFirstMessageRepositoryImpl
 import com.leandrour.chat.data.network.ConnectionErrorHandler
 import com.leandrour.chat.data.network.ConnectionRetryHandler
 import com.leandrour.chat.data.network.KtorWebSocketConnector
+import com.leandrour.chat.data.participant.OfflineFirstChatParticipantRepositoryImpl
 import com.leandrour.chat.database.DatabaseFactory
 import com.leandrour.chat.domain.chat.ChatConnectionClient
-import com.leandrour.chat.domain.chat.ChatParticipantService
+import com.leandrour.chat.domain.participant.ChatParticipantService
 import com.leandrour.chat.domain.chat.ChatRepository
 import com.leandrour.chat.domain.chat.ChatService
 import com.leandrour.chat.domain.message.ChatMessageService
 import com.leandrour.chat.domain.message.MessageRepository
+import com.leandrour.chat.domain.participant.ChatParticipantRepository
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -36,6 +38,7 @@ val chatDataModule = module {
     singleOf(::ConnectionRetryHandler)
     singleOf(::KtorWebSocketConnector)
     singleOf(::KtorChatMessageServiceImpl) bind ChatMessageService::class
+    singleOf(::OfflineFirstChatParticipantRepositoryImpl) bind ChatParticipantRepository::class
     single {
         Json {
             ignoreUnknownKeys = true

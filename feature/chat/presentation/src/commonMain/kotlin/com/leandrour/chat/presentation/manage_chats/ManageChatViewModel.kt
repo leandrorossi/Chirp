@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import chirp.feature.chat.presentation.generated.resources.Res
 import chirp.feature.chat.presentation.generated.resources.error_participant_not_found
-import com.leandrour.chat.domain.chat.ChatParticipantService
+import com.leandrour.chat.domain.participant.ChatParticipantService
 import com.leandrour.chat.domain.chat.ChatRepository
 import com.leandrour.chat.presentation.components.manage_chats.ManageChatAction
 import com.leandrour.chat.presentation.components.manage_chats.ManageChatState
