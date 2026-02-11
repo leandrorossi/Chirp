@@ -37,12 +37,13 @@ import chirp.feature.chat.presentation.generated.resources.no_chats_subtitle
 import com.leandrour.chat.presentation.chat_list.components.ChatListHeader
 import com.leandrour.chat.presentation.chat_list.components.ChatListItemUi
 import com.leandrour.chat.presentation.components.EmptySection
-import com.leandrour.chat.presentation.model.ChatUi
 import com.leandrour.core.designsystem.components.brand.ChirpHorizontalDivider
 import com.leandrour.core.designsystem.components.buttons.ChirpFloatingActionButton
 import com.leandrour.core.designsystem.components.dialogs.DestructiveConfirmationDialog
 import com.leandrour.core.designsystem.theme.ChirpTheme
 import com.leandrour.core.designsystem.theme.extended
+import com.leandrour.core.presentation.permissions.Permission
+import com.leandrour.core.presentation.permissions.rememberPermissionController
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -86,6 +87,11 @@ fun ChatListScreen(
     onAction: (ChatListAction) -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
+    val permissionController = rememberPermissionController()
+    LaunchedEffect(true) {
+        permissionController.requestPermission(Permission.NOTIFICATIONS)
+    }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
