@@ -1,6 +1,7 @@
 package com.leandrour.core.data.auth
 
 import com.leandrour.core.data.dto.AuthInfoSerializable
+import com.leandrour.core.data.dto.ChangePasswordRequest
 import com.leandrour.core.data.dto.EmailRequest
 import com.leandrour.core.data.dto.LoginRequest
 import com.leandrour.core.data.dto.RegisterRequest
@@ -80,6 +81,19 @@ class KtorAuthServiceImpl(
             body = ResetPasswordRequest(
                 newPassword = newPassword,
                 token = token
+            )
+        )
+    }
+
+    override suspend fun changePassword(
+        currentPassword: String,
+        newPassword: String
+    ): EmptyResult<DataError.Remote> {
+        return httpClient.post(
+            route = "/auth/change-password",
+            body = ChangePasswordRequest(
+                oldPassword = currentPassword,
+                newPassword = newPassword
             )
         )
     }
