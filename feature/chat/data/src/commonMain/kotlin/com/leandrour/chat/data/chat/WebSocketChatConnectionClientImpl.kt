@@ -99,7 +99,7 @@ class WebSocketChatConnectionClientImpl(
         )
 
         val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
-        if (authInfo != null) {
+        if (authInfo != null && authInfo.user.id == message.userId) {
             sessionStorage.set(
                 info = authInfo.copy(
                     user = authInfo.user.copy(

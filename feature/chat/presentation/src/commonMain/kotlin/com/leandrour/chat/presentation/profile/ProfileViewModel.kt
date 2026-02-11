@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import chirp.feature.chat.presentation.generated.resources.Res
 import chirp.feature.chat.presentation.generated.resources.error_current_password_equal_to_new_one
 import chirp.feature.chat.presentation.generated.resources.error_current_password_incorrect
+import chirp.feature.chat.presentation.generated.resources.error_invalid_file_type
 import com.leandrour.chat.domain.participant.ChatParticipantRepository
 import com.leandrour.core.domain.auth.AuthService
 import com.leandrour.core.domain.auth.SessionStorage
@@ -44,6 +45,7 @@ class ProfileViewModel(
         if (authInfo != null) {
             currentState.copy(
                 username = authInfo.user.username,
+                userInitials = authInfo.user.username.take(2),
                 emailTextState = TextFieldState(initialText = authInfo.user.email),
                 profilePictureUrl = authInfo.user.profilePictureUrl,
             )
@@ -67,6 +69,11 @@ class ProfileViewModel(
             is ProfileAction.OnChangePasswordClick -> changePassword()
             is ProfileAction.OnToggleCurrentPasswordVisibility -> toggleCurrentPasswordVisibility()
             is ProfileAction.OnToggleNewPasswordVisibility -> toggleNewPasswordVisibility()
+            is ProfileAction.OnPictureSelected -> uploadProfilePicture(
+                action.bytes,
+                action.mimeType
+            )
+
             else -> Unit
         }
     }
@@ -135,6 +142,49 @@ class ProfileViewModel(
                         it.copy(
                             newPasswordError = errorMessage,
                             isChangingPassword = false
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun uploadProfilePicture(bytes: ByteArray, mimeType: String?) {
+        if (state.value.isUploadingImage) {
+            return
+        }
+
+        if (mimeType == null) {
+            _state.update {
+                it.copy(
+                    imageError = UiText.Resource(Res.string.error_invalid_file_type)
+                )
+            }
+            return
+        }
+
+
+        _state.update {
+            it.copy(
+                isUploadingImage = true,
+                imageError = null
+            )
+        }
+
+        viewModelScope.launch {
+            chatParticipantRepository
+                .uploadPictureUrl(bytes, mimeType)
+                .onSuccess {
+                    _state.update {
+                        it.copy(
+                            isUploadingImage = false,
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            imageError = error.toUiText(),
+                            isUploadingImage = false
                         )
                     }
                 }

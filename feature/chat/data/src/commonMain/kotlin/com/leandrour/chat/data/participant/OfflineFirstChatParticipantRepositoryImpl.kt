@@ -5,6 +5,7 @@ import com.leandrour.chat.domain.participant.ChatParticipantRepository
 import com.leandrour.chat.domain.participant.ChatParticipantService
 import com.leandrour.core.domain.auth.SessionStorage
 import com.leandrour.core.domain.util.DataError
+import com.leandrour.core.domain.util.EmptyResult
 import com.leandrour.core.domain.util.Result
 import com.leandrour.core.domain.util.onSuccess
 import kotlinx.coroutines.flow.first
@@ -25,6 +26,41 @@ class OfflineFirstChatParticipantRepositoryImpl(
                             id = participant.userId,
                             username = participant.username,
                             profilePictureUrl = participant.profilePicture
+                        )
+                    )
+                )
+            }
+    }
+
+    override suspend fun uploadPictureUrl(
+        imageBytes: ByteArray,
+        mimeType: String
+    ): EmptyResult<DataError.Remote> {
+        val result = chatParticipantService.getProfilePictureUploadUrl(mimeType)
+
+        if (result is Result.Failure) {
+            return result
+        }
+
+        val uploadUrls = (result as Result.Success).data
+        val uploadResult = chatParticipantService.uploadProfilePicture(
+            uploadUrl = uploadUrls.uploadUrl,
+            imageBytes = imageBytes,
+            headers = uploadUrls.headers
+        )
+
+        if (uploadResult is Result.Failure) {
+            return uploadResult
+        }
+
+        return chatParticipantService
+            .confirmProfilePictureUpload(uploadUrls.publicUrl)
+            .onSuccess {
+                val currentAuthInfo = sessionStorage.observeAuthInfo().first()
+                sessionStorage.set(
+                    currentAuthInfo?.copy(
+                        user = currentAuthInfo.user.copy(
+                            profilePictureUrl = uploadUrls.publicUrl
                         )
                     )
                 )
