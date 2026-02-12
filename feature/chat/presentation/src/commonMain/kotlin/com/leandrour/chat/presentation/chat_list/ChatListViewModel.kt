@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.leandrour.chat.domain.chat.ChatRepository
 import com.leandrour.chat.domain.notification.DeviceTokenService
+import com.leandrour.chat.domain.participant.ChatParticipantRepository
 import com.leandrour.chat.presentation.mappers.toUi
 import com.leandrour.core.domain.auth.AuthService
 import com.leandrour.core.domain.auth.SessionStorage
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 
 class ChatListViewModel(
     private val chatRepository: ChatRepository,
+    private val chatParticipantRepository: ChatParticipantRepository,
     private val sessionStorage: SessionStorage,
     private val deviceTokenService: DeviceTokenService,
     private val authService: AuthService
@@ -51,6 +53,7 @@ class ChatListViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 loadChats()
+                fetchLocalUserProfile()
                 hasLoadedInitialData = true
             }
         }
@@ -141,6 +144,11 @@ class ChatListViewModel(
         }
     }
 
+    private fun fetchLocalUserProfile() {
+        viewModelScope.launch {
+            chatParticipantRepository.fetchLocalParticipant()
+        }
+    }
 
     private fun loadChats() {
         viewModelScope.launch {
