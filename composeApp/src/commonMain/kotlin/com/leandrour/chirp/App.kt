@@ -21,7 +21,6 @@ fun App(
     viewModel: MainViewModel = koinViewModel()
 ) {
     val navController = rememberNavController()
-    DeepLinkListener(navController)
 
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -52,5 +51,6 @@ fun App(
                 AuthGraphRoutes.Graph
             }
         )
+        DeepLinkListener(navController)
     }
 }

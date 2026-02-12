@@ -10,6 +10,7 @@ import com.leandrour.chat.data.message.OfflineFirstMessageRepositoryImpl
 import com.leandrour.chat.data.network.ConnectionErrorHandler
 import com.leandrour.chat.data.network.ConnectionRetryHandler
 import com.leandrour.chat.data.network.KtorWebSocketConnector
+import com.leandrour.chat.data.notification.KtorDeviceTokenService
 import com.leandrour.chat.data.participant.OfflineFirstChatParticipantRepositoryImpl
 import com.leandrour.chat.database.DatabaseFactory
 import com.leandrour.chat.domain.chat.ChatConnectionClient
@@ -18,6 +19,7 @@ import com.leandrour.chat.domain.chat.ChatRepository
 import com.leandrour.chat.domain.chat.ChatService
 import com.leandrour.chat.domain.message.ChatMessageService
 import com.leandrour.chat.domain.message.MessageRepository
+import com.leandrour.chat.domain.notification.DeviceTokenService
 import com.leandrour.chat.domain.participant.ChatParticipantRepository
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
@@ -38,6 +40,7 @@ val chatDataModule = module {
     singleOf(::ConnectionRetryHandler)
     singleOf(::KtorWebSocketConnector)
     singleOf(::KtorChatMessageServiceImpl) bind ChatMessageService::class
+    singleOf(::KtorDeviceTokenService) bind DeviceTokenService::class
     singleOf(::OfflineFirstChatParticipantRepositoryImpl) bind ChatParticipantRepository::class
     single {
         Json {
