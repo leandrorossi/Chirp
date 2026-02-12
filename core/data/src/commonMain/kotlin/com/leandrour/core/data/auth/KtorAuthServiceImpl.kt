@@ -4,6 +4,7 @@ import com.leandrour.core.data.dto.AuthInfoSerializable
 import com.leandrour.core.data.dto.ChangePasswordRequest
 import com.leandrour.core.data.dto.EmailRequest
 import com.leandrour.core.data.dto.LoginRequest
+import com.leandrour.core.data.dto.RefreshTokenRequest
 import com.leandrour.core.data.dto.RegisterRequest
 import com.leandrour.core.data.dto.ResetPasswordRequest
 import com.leandrour.core.data.mappers.toDomain
@@ -15,7 +16,10 @@ import com.leandrour.core.domain.util.DataError
 import com.leandrour.core.domain.util.EmptyResult
 import com.leandrour.core.domain.util.Result
 import com.leandrour.core.domain.util.map
+import com.leandrour.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.auth.authProvider
+import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 
 class KtorAuthServiceImpl(
     private val httpClient: HttpClient
@@ -96,5 +100,14 @@ class KtorAuthServiceImpl(
                 newPassword = newPassword
             )
         )
+    }
+
+    override suspend fun logout(refreshToken: String): EmptyResult<DataError.Remote> {
+        return httpClient.post<RefreshTokenRequest, Unit>(
+            route = "/auth/logout",
+            body = RefreshTokenRequest(refreshToken)
+        ).onSuccess {
+            httpClient.authProvider<BearerAuthProvider>()?.clearToken()
+        }
     }
 }

@@ -84,7 +84,7 @@ fun ChatListDetailAdaptiveLayout(
                     onProfileSettingsClick = {
                         chatListDetailViewModel.onAction(ChatListDetailAction.OnProfileSettingsClick)
                     },
-                    onConfirmLogoutClick = onLogout
+                    onSuccessfulLogout = onLogout
                 )
             }
         },

@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -44,6 +45,8 @@ import com.leandrour.core.designsystem.theme.ChirpTheme
 import com.leandrour.core.designsystem.theme.extended
 import com.leandrour.core.presentation.permissions.Permission
 import com.leandrour.core.presentation.permissions.rememberPermissionController
+import com.leandrour.core.presentation.util.ObserveAsEvents
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -52,7 +55,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun ChatListRoot(
     selectedChatId: String?,
     onChatClick: (String?) -> Unit,
-    onConfirmLogoutClick: () -> Unit,
+    onSuccessfulLogout: () -> Unit,
     onCreateChatClick: () -> Unit,
     onProfileSettingsClick: () -> Unit,
     viewModel: ChatListViewModel = koinViewModel()
@@ -60,6 +63,20 @@ fun ChatListRoot(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val scope = rememberCoroutineScope()
+    ObserveAsEvents(viewModel.events) { event ->
+        when(event) {
+            is ChatListEvent.OnLogoutError -> {
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = event.error.asStringAsync()
+                    )
+                }
+            }
+            ChatListEvent.OnLogoutSuccess -> onSuccessfulLogout()
+        }
+    }
 
     LaunchedEffect(selectedChatId) {
         viewModel.onAction(ChatListAction.OnSelectChat(selectedChatId))
@@ -70,7 +87,6 @@ fun ChatListRoot(
         onAction = { action ->
             when (action) {
                 is ChatListAction.OnSelectChat -> onChatClick(action.chatId)
-                ChatListAction.OnConfirmLogout -> onConfirmLogoutClick()
                 ChatListAction.OnCreateChatClick -> onCreateChatClick()
                 ChatListAction.OnProfileSettingsClick -> onProfileSettingsClick()
                 else -> Unit
