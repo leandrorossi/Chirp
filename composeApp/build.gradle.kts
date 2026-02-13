@@ -11,6 +11,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
 
             implementation(libs.core.splashscreen)
+
+            implementation(libs.koin.android)
         }
         commonMain.dependencies {
             implementation(projects.core.data)
@@ -37,12 +39,22 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.jetbrains.compose.viewmodel)
             implementation(libs.jetbrains.lifecycle.compose)
-
-            implementation(libs.koin.android)
         }
-        jvmMain.dependencies {
+        desktopMain.dependencies {
+            implementation(projects.core.presentation)
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.kotlin.stdlib)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.jsystemthemedetector)
         }
+    }
+}
+
+compose.desktop {
+    application {
+        mainClass = "com.leandrour.chirp.MainKt"
     }
 }
