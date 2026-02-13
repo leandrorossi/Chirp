@@ -27,6 +27,12 @@ kotlin {
             }
         }
 
+        desktopMain {
+            dependencies {
+                implementation(libs.ktor.client.okhttp)
+            }
+        }
+
         androidMain {
             dependencies {
                 // Add Android-specific dependencies here. Note that this source set depends on
