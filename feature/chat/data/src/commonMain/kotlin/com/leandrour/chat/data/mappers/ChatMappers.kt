@@ -28,11 +28,16 @@ fun ChatEntity.toDomain(
     participants: List<ChatParticipant>,
     lastMessage: ChatMessage? = null
 ): Chat {
+    val lastMessageSenderUsername = lastMessage?.let { message ->
+        participants.find { it.userId == message.senderId }?.username
+    }
+
     return Chat(
         id = chatId,
         participants = participants,
         lastActivityAt = Instant.fromEpochMilliseconds(lastActivityAt),
-        lastMessage = lastMessage
+        lastMessage = lastMessage,
+        lastMessageSenderUsername = lastMessageSenderUsername
     )
 }
 
@@ -41,7 +46,8 @@ fun ChatWithParticipants.toDomain(): Chat {
         id = chat.chatId,
         participants = participants.map { it.toDomain() },
         lastActivityAt = Instant.fromEpochMilliseconds(chat.lastActivityAt),
-        lastMessage = lastMessage?.toDomain()
+        lastMessage = lastMessage?.toDomain(),
+        lastMessageSenderUsername = lastMessage?.senderUsername
     )
 }
 
