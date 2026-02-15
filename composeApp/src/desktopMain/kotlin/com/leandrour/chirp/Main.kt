@@ -39,8 +39,8 @@ fun main() {
                     onAddWindowClick = {
                         applicationStateHolder.onAddWindowClick()
                     },
-                    onFocusChange = {
-
+                    onFocusChange = { focused ->
+                        applicationStateHolder.onWindowFocusChanged(window.id, focused)
                     }
                 )
             }

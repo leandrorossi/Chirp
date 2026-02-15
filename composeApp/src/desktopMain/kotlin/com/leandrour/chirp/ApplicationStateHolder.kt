@@ -1,7 +1,9 @@
 package com.leandrour.chirp
 
+import androidx.compose.ui.window.Notification
 import com.leandro.ur.core.domain.preferences.ThemePreference
 import com.leandro.ur.core.domain.preferences.ThemePreferences
+import com.leandrour.chat.data.notification.DesktopNotifier
 import com.leandrour.chirp.windows.WindowState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,19 +17,40 @@ import kotlinx.coroutines.launch
 
 class ApplicationStateHolder(
     private val applicationScope: CoroutineScope,
-    private val themePreferences: ThemePreferences
+    private val themePreferences: ThemePreferences,
+    private val desktopNotifier: DesktopNotifier
 ) {
 
     private val _state = MutableStateFlow(ApplicationState())
     val state = _state
         .onStart {
             observeThemePreference()
+            observeNewMessages()
         }
         .stateIn(
             applicationScope,
             SharingStarted.Lazily,
             _state.value
         )
+
+    fun observeNewMessages() {
+        desktopNotifier
+            .observeNewNotifications()
+            .onEach { notificationPayload ->
+                val isAppInBackground = state.value.windows.none { it.isFocused }
+
+                if (isAppInBackground) {
+                    state.value.trayState.sendNotification(
+                        notification = Notification(
+                            title = notificationPayload.title,
+                            message = notificationPayload.message,
+                            type = Notification.Type.Info
+                        )
+                    )
+                }
+            }
+            .launchIn(applicationScope)
+    }
 
     fun observeThemePreference() {
         themePreferences
@@ -40,6 +63,18 @@ class ApplicationStateHolder(
                 }
             }
             .launchIn(applicationScope)
+    }
+
+    fun onWindowFocusChanged(id: String, isFocused: Boolean) {
+        _state.update {
+            it.copy(
+                windows = it.windows.map { currentWindow ->
+                    if (currentWindow.id == id) {
+                        currentWindow.copy(isFocused = isFocused)
+                    } else currentWindow
+                }
+            )
+        }
     }
 
     fun onThemePreferenceClick(themePreference: ThemePreference) {

@@ -3,6 +3,7 @@ package com.leandrour.chat.data.di
 import com.leandrour.chat.data.lifecycle.AppLifecycleObserver
 import com.leandrour.chat.data.network.ConnectionErrorHandler
 import com.leandrour.chat.data.network.ConnectivityObserver
+import com.leandrour.chat.data.notification.DesktopNotifier
 import com.leandrour.chat.data.notification.FirebasePushNotificationService
 import com.leandrour.chat.database.DatabaseFactory
 import com.leandrour.chat.domain.notification.PushNotificationService
@@ -15,5 +16,6 @@ actual val platformChatDataModule = module {
     singleOf(::ConnectionErrorHandler)
     singleOf(::ConnectivityObserver)
     singleOf(::AppLifecycleObserver)
+    singleOf(::DesktopNotifier)
     singleOf(::FirebasePushNotificationService) bind PushNotificationService::class
 }
