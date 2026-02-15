@@ -7,6 +7,7 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.window.application
 import com.leandrour.chirp.di.desktopModule
 import com.leandrour.chirp.di.initKoin
+import com.leandrour.chirp.theme.rememberAppTheme
 import com.leandrour.chirp.windows.ChirpWindow
 import org.koin.compose.koinInject
 
@@ -26,9 +27,12 @@ fun main() {
             }
         }
 
+        val appTheme = rememberAppTheme(applicationState.themePreference)
+
         for (window in windows) {
             key(window.id) {
                 ChirpWindow(
+                    appTheme = appTheme,
                     onCloseRequest = {
                         applicationStateHolder.onWindowCloseRequest(window.id)
                     },
@@ -41,5 +45,11 @@ fun main() {
                 )
             }
         }
+
+        ChirpTrayMenu(
+            state = applicationState.trayState,
+            themePreferenceFromAppSettings = applicationState.themePreference,
+            onThemePreferenceClick = applicationStateHolder::onThemePreferenceClick
+        )
     }
 }

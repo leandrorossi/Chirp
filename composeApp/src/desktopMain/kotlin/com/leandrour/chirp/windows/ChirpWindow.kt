@@ -12,11 +12,13 @@ import chirp.composeapp.generated.resources.file
 import chirp.composeapp.generated.resources.logo
 import chirp.composeapp.generated.resources.new_window
 import com.leandrour.chirp.App
+import com.leandrour.chirp.theme.AppTheme
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ChirpWindow(
+    appTheme: AppTheme,
     onCloseRequest: () -> Unit,
     onAddWindowClick: () -> Unit,
     onFocusChange: (Boolean) -> Unit,
@@ -50,6 +52,8 @@ fun ChirpWindow(
             }
         }
 
-        App()
+        App(
+            isDarkTheme = appTheme == AppTheme.DARK
+        )
     }
 }
