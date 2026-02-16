@@ -2,6 +2,7 @@ rootProject.name = "Chirp"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google {
             mavenContent {
@@ -25,6 +26,7 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven(url = "https://jitpack.io")
     }
 }
 
@@ -33,3 +35,13 @@ plugins {
 }
 
 include(":composeApp")
+include(":core:domain")
+include(":core:data")
+include(":core:presentation")
+include(":core:designsystem")
+include(":feature:auth:domain")
+include(":feature:auth:presentation")
+include(":feature:chat:data")
+include(":feature:chat:presentation")
+include(":feature:chat:domain")
+include(":feature:chat:database")
