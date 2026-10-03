@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".ChirpApplication"
+        android:name=".androidapp.ChirpApplication"
         android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -14,7 +14,7 @@
         android:theme="@style/Theme.App.Starting">
         <activity
             android:exported="true"
-            android:name=".MainActivity"
+            android:name=".androidapp.MainActivity"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,7 +28,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="http" />
-                <data android:host="10.0.2.2" />
+                <data android:host="localhost" />
                 <data android:port="8080" />
 
                 <data android:pathPrefix="/api/auth/verify" />
@@ -40,7 +40,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="chirp" />
-                <data android:host="10.0.2.2" />
+                <data android:host="localhost" />
                 <data android:port="8080" />
 
                 <data android:pathPrefix="/api/auth/verify" />

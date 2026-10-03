@@ -27,13 +27,21 @@ kotlin {
             }
         }
 
+        val jvmCommonMain by creating {
+            dependsOn(commonMain.get())
+        }
+
         desktopMain {
+            dependsOn(jvmCommonMain)
+
             dependencies {
                 implementation(libs.ktor.client.okhttp)
             }
         }
 
         androidMain {
+            dependsOn(jvmCommonMain)
+
             dependencies {
                 // Add Android-specific dependencies here. Note that this source set depends on
                 // commonMain by default and will correctly pull the Android artifacts of any KMP
