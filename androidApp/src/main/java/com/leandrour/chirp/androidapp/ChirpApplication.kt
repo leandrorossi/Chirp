@@ -1,4 +1,4 @@
-package com.leandrour.chirp
+package com.leandrour.chirp.androidapp
 
 import android.app.Application
 import com.leandrour.chirp.di.initKoin
